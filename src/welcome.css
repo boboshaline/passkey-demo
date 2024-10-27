@@ -1,0 +1,20 @@
+.container {
+  min-height: 100vh;
+  min-width: 100vw;
+  background: linear-gradient(to right, #8c8988, #d5c5b8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image {
+  width: 300px;
+  height: 300px;
+  border-radius: 50px;
+  margin: 10px;
+}
+
+.text {
+  font-size: large;
+  font-family: "Courier New", Courier, monospace;
+}
