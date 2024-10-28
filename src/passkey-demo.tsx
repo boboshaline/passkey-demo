@@ -1,33 +1,10 @@
 import React, { useState } from "react";
 import "./passkey-auth.css";
-// import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-// function arrayBufferToStr(buf: ArrayBuffer) {
-//   return String.fromCharCode.apply(null, new Uint8Array(buf));
-// }
-function arrayBufferToStr(buf: ArrayBuffer): string {
-  const uint8Array = new Uint8Array(buf);
-  return String.fromCharCode(...Array.from(uint8Array)); // Convert to regular array using Array.from()
-}
-
-function bufferToBase64UrlNew(buffer: ArrayBuffer): string {
-  const uint8Array = new Uint8Array(buffer);
-  let binaryString = "";
-
-  // Manually construct the binary string
-  for (let i = 0; i < uint8Array.length; i++) {
-    binaryString += String.fromCharCode(uint8Array[i]);
-  }
-
-  // Encode to Base64 URL
-  return btoa(binaryString)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-}
-function bufferToBase64Url(buffer: ArrayBuffer | null) {
+export function bufferToBase64Url(buffer: ArrayBuffer | null) {
   // Convert ArrayBuffer to a byte array
   if (!buffer) {
     console.log("no public key");
@@ -48,20 +25,8 @@ function bufferToBase64Url(buffer: ArrayBuffer | null) {
   return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function stringToBase64Url(str: string) {
-  // Encode the string to Base64
-  const base64 = window.btoa(str);
-
-  // Convert to URL-safe Base64 by replacing `+`, `/`, and removing `=`
-  const base64Url = base64
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-  return base64Url;
-}
-
 //encoding the public key
-function arrayBufferToBase64(buffer: any | null) {
+export function arrayBufferToBase64(buffer: any | null) {
   if (!buffer) {
     console.error("no public key");
     throw new Error("no public key found");
@@ -78,7 +43,7 @@ function arrayBufferToBase64(buffer: any | null) {
 }
 
 //decoding the id/challenge
-function base64ToArrayBuffer(base64: string) {
+export function base64ToArrayBuffer(base64: string) {
   // Replace URL-safe characters
   let standardBase64 = base64
     .replace(/-/g, "+") // Replace '-' with '+'
@@ -108,15 +73,17 @@ const PassKeyAuth = () => {
   const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
-  const userId = "671e025c98656c79b149207d";
-
+  const location = useLocation();
+  const { id } = location.state || {};
+  console.log(id, "id from navigation");
+  // const userId = "671e52fa2d175460226d9c8d";
   const register = async () => {
     try {
       // Correct the URL to include the slashes
       const response = await axios.post(
         "http://localhost:3000/registerRequest",
         {
-          userId,
+          userId: id,
         }
       );
       console.log(response, "response from passkey endpoint");
@@ -153,7 +120,7 @@ const PassKeyAuth = () => {
 
         console.log(credential);
         //   // Send the credentials to the server for registration
-        if (credential) {
+        if ("data" in credential) {
           // Ensure you have a username or another identifier to send along with the credential
 
           const attestationResponse =
@@ -180,11 +147,9 @@ const PassKeyAuth = () => {
             credentialPublicKey: bufferToBase64Url(
               attestationResponse.getPublicKey()
             ),
-
             clientDataJSON: arrayBufferToBase64(
               credential.response.clientDataJSON
             ),
-
             authenticatorData: attestationResponse.getAuthenticatorData(),
             attestationObject: bufferToBase64Url(
               attestationResponse.attestationObject
@@ -192,9 +157,7 @@ const PassKeyAuth = () => {
             publicKeyAlgorithm: attestationResponse.getPublicKeyAlgorithm(),
             transports: attestationResponse.getTransports(),
           };
-          // console.log(response.id, "credential id");
-          // console.log(response, "Response after type casting");
-
+          const userId = id;
           const storeCredential = await axios.post(
             "http://localhost:3000/registerResponse",
             { response: responsePayLoad, userId }
@@ -213,31 +176,6 @@ const PassKeyAuth = () => {
     }
   };
 
-  const login = async () => {
-    const publicKey: PublicKeyCredentialRequestOptions = {
-      challenge: new Uint8Array(32),
-      allowCredentials: [
-        {
-          id: new Uint8Array(16),
-          type: "public-key",
-        },
-      ],
-    };
-
-    try {
-      const assertion: Credential | null = await navigator.credentials.get({
-        publicKey,
-      });
-      //send the assertion to your server for verification
-      if (assertion) {
-        //await axios.post(),{assertion,username}
-        setMessage("Login successful!");
-      }
-    } catch (error) {
-      console.error("Error during login:", error);
-      setMessage("Login failed!");
-    }
-  };
   return (
     <div className="div">
       <div className="card">
