@@ -171,14 +171,7 @@ const SignupForm = () => {
             placeholder="Enter your username"
             autoComplete="username webauthn"
           />
-          <label className="label">Password</label>
-          <input
-            className="input"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
-          />
+
           <button className="button" type="submit">
             Submit
           </button>
