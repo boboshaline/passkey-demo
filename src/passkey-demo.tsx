@@ -149,7 +149,7 @@ const PassKeyAuth = () => {
             "client data json to be sent"
           );
           const responsePayLoad = {
-            id: credential.id,
+            id: base64ToArrayBuffer(credential.id),
             rawId: bufferToBase64Url(credential.rawId),
             type: credential.type,
             response: {
