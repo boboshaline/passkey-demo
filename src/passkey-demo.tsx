@@ -86,7 +86,8 @@ const PassKeyAuth = () => {
         "http://localhost:3000/registerRequest",
         {
           userId: id,
-        }
+        },
+        { withCredentials: true }
       );
       console.log(response, "response from passkey endpoint");
 
@@ -143,7 +144,10 @@ const PassKeyAuth = () => {
           if (!credential.response.clientDataJSON) {
             console.error("no client data json");
           }
-
+          console.log(
+            attestationResponse.clientDataJSON,
+            "client data json to be sent"
+          );
           const responsePayLoad = {
             id: credential.id,
             rawId: bufferToBase64Url(credential.rawId),
@@ -162,13 +166,16 @@ const PassKeyAuth = () => {
             publicKeyAlgorithm: attestationResponse.getPublicKeyAlgorithm(),
             transports: attestationResponse.getTransports(),
           };
+          console.log(
+            responsePayLoad.clientDataJSON,
+            "client data json in object"
+          );
           const userId = id;
           console.log(userId, "id to send to server");
           const storeCredential = await axios.post(
             "http://localhost:3000/registerResponse",
             { response: responsePayLoad, userId }
           );
-
           console.log(storeCredential, "response from storage");
           setMessage("Registration successful!");
         }
