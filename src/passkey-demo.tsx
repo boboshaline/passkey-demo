@@ -190,7 +190,7 @@ const PassKeyAuth = () => {
           console.log(userId, "id to send to server");
           const storeCredential = await axios.post(
             "http://localhost:3000/registerResponse",
-            { response: { credential: responsePayLoad }, userId },
+            { response: responsePayLoad, userId },
             { withCredentials: true }
           );
           console.log(storeCredential, "response from storage");

@@ -70,7 +70,9 @@ const SignupForm = () => {
 
     try {
       //fetch challenge and options from backend
-      const response = await axios.post("http://localhost:3000/signinRequest");
+      const response = await axios.post("http://localhost:3000/signinRequest", {
+        withCredentials: true,
+      });
       console.log(JSON.stringify(response.data), "response from login request");
 
       if ("data" in response) {
@@ -99,7 +101,7 @@ const SignupForm = () => {
 
         if (assertion) {
           const responseToSend = {
-            id: base64ToArrayBuffer(assertion.id),
+            id: assertion.id,
             rawId: bufferToBase64Url(assertion.rawId),
             clientDataJSON: arrayBufferToBase64(
               assertion.response.clientDataJSON
@@ -120,7 +122,8 @@ const SignupForm = () => {
             {
               response: responseToSend,
               userId: id,
-            }
+            },
+            { withCredentials: true }
           );
           console.log(result, "result from saving to server");
         }
