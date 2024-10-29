@@ -25,16 +25,6 @@ export function bufferToBase64Url(buffer: ArrayBuffer | null) {
   // Convert Base64 to URL-safe Base64 by replacing `+` and `/` and removing `=`
   return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
-function toBase64UrlSafe(id: any) {
-  const byteArray = new Uint8Array(id);
-  let binaryString = "";
-  byteArray.forEach((byte) => (binaryString += String.fromCharCode(byte)));
-
-  return btoa(binaryString)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, ""); // Remove padding characters
-}
 
 //encoding the public key
 export function arrayBufferToBase64(buffer: any | null) {
@@ -171,9 +161,10 @@ const PassKeyAuth = () => {
             attestationResponse.clientDataJSON,
             "client data json to be sent"
           );
+
           const responsePayLoad = {
             id: credential.id,
-            rawId: toBase64Url(credential.rawId),
+            rawId: bufferToBase64Url(credential.rawId),
             type: credential.type,
             response: {
               clientDataJSON: bufferToBase64Url(
@@ -199,7 +190,7 @@ const PassKeyAuth = () => {
           console.log(userId, "id to send to server");
           const storeCredential = await axios.post(
             "http://localhost:3000/registerResponse",
-            { response: responsePayLoad, userId },
+            { response: { credential: responsePayLoad }, userId },
             { withCredentials: true }
           );
           console.log(storeCredential, "response from storage");
