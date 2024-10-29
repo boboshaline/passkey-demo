@@ -72,22 +72,7 @@ const SignupForm = () => {
       //fetch challenge and options from backend
       const response = await axios.post("http://localhost:3000/signinRequest");
       console.log(JSON.stringify(response.data), "response from login request");
-      // const publicKey: PublicKeyCredentialRequestOptions = {
-      //   challenge: new Uint32Array(16),
-      //   allowCredentials: [],
-      //   userVerification: "preferred",
-      // };
-      // const assertion = (await navigator.credentials.get({
-      //   publicKey,
-      //   signal: abortController.signal,
-      //   mediation: "required",
-      // })) as PublicKeyCredential;
 
-      // const assertionResponse =
-      //   assertion.response as AuthenticatorAssertionResponse;
-
-      // console.log(assertionResponse, "attestion response");
-      // console.log(assertion, "response from login with passkeys");
       if ("data" in response) {
         const publicKey: PublicKeyCredentialRequestOptions = {
           challenge: base64ToArrayBuffer(response.data.challenge),
@@ -97,6 +82,8 @@ const SignupForm = () => {
         };
         const assertion = (await navigator.credentials.get({
           publicKey,
+          signal: abortController.signal,
+          mediation: "required",
         })) as PublicKeyCredentialWithAssertion;
         console.log(
           JSON.stringify(assertion, null, 2),
@@ -110,7 +97,7 @@ const SignupForm = () => {
           "user handle encoded"
         );
 
-        if ("data" in assertion) {
+        if (assertion) {
           const responseToSend = {
             id: base64ToArrayBuffer(assertion.id),
             rawId: bufferToBase64Url(assertion.rawId),
@@ -124,7 +111,10 @@ const SignupForm = () => {
             authenticatorData: assertion.response.authenticatorData,
           };
           const id = decodeArrayBuffer(assertion.response.userHandle);
-          console.log(responseToSend, "response to send to server");
+          console.log(
+            responseToSend,
+            "---------------------response to send to server----------------------------------------"
+          );
           const result = await axios.post(
             "http://localhost:3000/signinResponse",
             {

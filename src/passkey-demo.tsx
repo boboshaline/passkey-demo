@@ -78,8 +78,10 @@ const PassKeyAuth = () => {
   console.log(id, "id from navigation");
   // const userId = "671e52fa2d175460226d9c8d";
   const register = async () => {
+    console.log("Register function started!!!!!!!!!");
     try {
       // Correct the URL to include the slashes
+      console.log("Preparing to send the user ID to server.");
       const response = await axios.post(
         "http://localhost:3000/registerRequest",
         {
@@ -95,7 +97,6 @@ const PassKeyAuth = () => {
 
         const publicKey: PublicKeyCredentialCreationOptions = {
           challenge: base64ToArrayBuffer(dataTodestructure.challenge),
-
           rp: {
             name: dataTodestructure.rp,
           },
@@ -118,9 +119,12 @@ const PassKeyAuth = () => {
           "credential from WebAuthn API"
         );
 
-        console.log(credential);
+        console.log(
+          credential,
+          "credential before checking data in credential."
+        );
         //   // Send the credentials to the server for registration
-        if ("data" in credential) {
+        if (credential) {
           // Ensure you have a username or another identifier to send along with the credential
 
           const attestationResponse =
@@ -139,6 +143,7 @@ const PassKeyAuth = () => {
           if (!credential.response.clientDataJSON) {
             console.error("no client data json");
           }
+
           const responsePayLoad = {
             id: credential.id,
             rawId: bufferToBase64Url(credential.rawId),
@@ -158,6 +163,7 @@ const PassKeyAuth = () => {
             transports: attestationResponse.getTransports(),
           };
           const userId = id;
+          console.log(userId, "id to send to server");
           const storeCredential = await axios.post(
             "http://localhost:3000/registerResponse",
             { response: responsePayLoad, userId }
