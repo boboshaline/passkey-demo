@@ -3,6 +3,7 @@ import "./passkey-auth.css";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { isoBase64URL, isoUint8Array } from "@simplewebauthn/server/helpers";
 
 export function bufferToBase64Url(buffer: ArrayBuffer | null) {
   // Convert ArrayBuffer to a byte array
@@ -24,6 +25,16 @@ export function bufferToBase64Url(buffer: ArrayBuffer | null) {
   // Convert Base64 to URL-safe Base64 by replacing `+` and `/` and removing `=`
   return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
+function toBase64UrlSafe(id: any) {
+  const byteArray = new Uint8Array(id);
+  let binaryString = "";
+  byteArray.forEach((byte) => (binaryString += String.fromCharCode(byte)));
+
+  return btoa(binaryString)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, ""); // Remove padding characters
+}
 
 //encoding the public key
 export function arrayBufferToBase64(buffer: any | null) {
@@ -40,6 +51,18 @@ export function arrayBufferToBase64(buffer: any | null) {
   }
   console.log(window.btoa(binary), "encoded/decoded public key");
   return window.btoa(binary); // Convert binary string to Base64
+}
+function toBase64Url(arrayBuffer: ArrayBuffer): string {
+  let binary = "";
+  const bytes = new Uint8Array(arrayBuffer);
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  // Convert to base64 and replace characters for URL safety
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 //decoding the id/challenge
@@ -149,8 +172,8 @@ const PassKeyAuth = () => {
             "client data json to be sent"
           );
           const responsePayLoad = {
-            id: base64ToArrayBuffer(credential.id),
-            rawId: bufferToBase64Url(credential.rawId),
+            id: credential.id,
+            rawId: toBase64Url(credential.rawId),
             type: credential.type,
             response: {
               clientDataJSON: bufferToBase64Url(
