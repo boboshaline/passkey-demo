@@ -161,6 +161,15 @@ const PassKeyAuth = () => {
             attestationResponse.clientDataJSON,
             "client data json to be sent"
           );
+          const destPubKey = attestationResponse.getPublicKey();
+          if (!destPubKey)
+            throw new Error("=============no public key================");
+          const newPubKeyyy = new Uint8Array(destPubKey);
+          const changedPubKey = isoBase64URL.fromBuffer(newPubKeyyy);
+          console.log(
+            changedPubKey,
+            "===========public key credential=========="
+          );
 
           const responsePayLoad = {
             id: credential.id,
@@ -175,9 +184,7 @@ const PassKeyAuth = () => {
               ),
             },
             clientExtensionResults: credential.getClientExtensionResults(),
-            credentialPublicKey: bufferToBase64Url(
-              attestationResponse.getPublicKey()
-            ),
+            credentialPublicKey: changedPubKey,
             authenticatorData: attestationResponse.getAuthenticatorData(),
             publicKeyAlgorithm: attestationResponse.getPublicKeyAlgorithm(),
             transports: attestationResponse.getTransports(),

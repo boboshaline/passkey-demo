@@ -17,14 +17,13 @@ function decodeArrayBuffer(buffer: any) {
   console.log(decoder.decode(buffer), "decoded user handle");
   return decoder.decode(buffer);
 }
-function toBase64URL(base64: any) {
-  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
+
 const SignupForm = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [userId, setUserId] = useState("");
+
+  const [loginemail, setLoginEmail] = useState("");
+  const [loginUsername, setLoginUsername] = useState("");
 
   const navigate = useNavigate();
 
@@ -34,9 +33,6 @@ const SignupForm = () => {
     // Handle form submission logic here
     try {
       if (username && email) {
-        const headers = {
-          "Content-Type": "application/json", // Specify the content type
-        };
         const personalInfo = {
           email: email,
           userName: username,
@@ -46,7 +42,7 @@ const SignupForm = () => {
           "http://localhost:3000/signup",
           personalInfo
         ); // Pass headers as a separate parameter
-        setUserId(response.data.userId);
+
         console.log(response.data, "response from server");
         if ("error" in response) {
           console.log(
@@ -55,6 +51,15 @@ const SignupForm = () => {
           );
         }
         if (response.data.userId) {
+          // Create an object to store
+          // const userInfo = {
+          //   username: username,
+          //   email: email,
+          //   userId: response.data.userId,
+          // };
+
+          // Store the object as a JSON string
+          // localStorage.setItem("userInfo", JSON.stringify(userInfo));
           // Navigate after successful response using the ID directly from response
           navigate(`/passkey`, { state: { id: response.data.userId } });
         } else {
@@ -71,6 +76,30 @@ const SignupForm = () => {
 
   async function login() {
     const abortController = new AbortController();
+    // const storedUserInfo = localStorage.getItem("userInfo");
+    // if (storedUserInfo) {
+    //   const userInfo = JSON.parse(storedUserInfo);
+    //   let userIdFound = null;
+
+    //   // Loop through all keys in local storage
+    //   for (let i = 0; i < localStorage.length; i++) {
+    //     const key = localStorage.key(i);
+    //     if (key?.startsWith("user_")) {
+    //       // Compare username and email
+    //       if (
+    //         userInfo.username === loginUsername &&
+    //         userInfo.email === loginemail
+    //       ) {
+    //         userIdFound = userInfo.userId; // Found the matching userId
+    //         console.log(userIdFound, "user id found");
+    //         break;
+    //       }
+    //     }
+    //   }
+    // console.log(`Loaded user info: ${JSON.stringify(userInfo)}`);
+    // } else {
+    //   console.log("No user info found.");
+    // }
 
     try {
       //fetch challenge and options from backend
@@ -161,7 +190,10 @@ const SignupForm = () => {
             type="email"
             name="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => [
+              setEmail(e.target.value),
+              setLoginEmail(e.target.value),
+            ]}
             placeholder="Enter your email"
             autoComplete="email webauthn"
           />
@@ -171,7 +203,10 @@ const SignupForm = () => {
             type="text"
             name="username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => [
+              setUsername(e.target.value),
+              setLoginUsername(e.target.value),
+            ]}
             placeholder="Enter your username"
             autoComplete="username webauthn"
           />
