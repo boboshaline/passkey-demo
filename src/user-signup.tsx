@@ -8,6 +8,7 @@ import {
   base64ToArrayBuffer,
   bufferToBase64Url,
 } from "./passkey-demo";
+import { isoBase64URL } from "@simplewebauthn/server/helpers";
 
 function decodeArrayBuffer(buffer: any) {
   // Create a new TextDecoder instance
@@ -15,6 +16,9 @@ function decodeArrayBuffer(buffer: any) {
   // Decode the ArrayBuffer to a string
   console.log(decoder.decode(buffer), "decoded user handle");
   return decoder.decode(buffer);
+}
+function toBase64URL(base64: any) {
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 const SignupForm = () => {
   const [email, setEmail] = useState("");
@@ -70,9 +74,13 @@ const SignupForm = () => {
 
     try {
       //fetch challenge and options from backend
-      const response = await axios.post("http://localhost:3000/signinRequest", {
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        "http://localhost:3000/signinRequest",
+        {},
+        {
+          withCredentials: true,
+        }
+      );
       console.log(JSON.stringify(response.data), "response from login request");
 
       if ("data" in response) {
@@ -98,19 +106,22 @@ const SignupForm = () => {
           decodeArrayBuffer(assertion.response.userHandle),
           "user handle encoded"
         );
-
+        const newData = new Uint8Array(assertion.response.authenticatorData);
+        const newSignature = new Uint8Array(assertion.response.signature);
         if (assertion) {
           const responseToSend = {
             id: assertion.id,
             rawId: bufferToBase64Url(assertion.rawId),
-            clientDataJSON: arrayBufferToBase64(
-              assertion.response.clientDataJSON
-            ),
+            response: {
+              clientDataJSON: bufferToBase64Url(
+                assertion.response.clientDataJSON
+              ),
+              authenticatorData: isoBase64URL.fromBuffer(newData),
+              userHandle: arrayBufferToBase64(assertion.response.userHandle),
+              signature: isoBase64URL.fromBuffer(newSignature),
+            },
             authenticatorAttachment: assertion.authenticatorAttachment,
-            signature: arrayBufferToBase64(assertion.response.signature),
             type: assertion.type,
-            userHandle: arrayBufferToBase64(assertion.response.userHandle),
-            authenticatorData: assertion.response.authenticatorData,
           };
           const id = decodeArrayBuffer(assertion.response.userHandle);
           console.log(
