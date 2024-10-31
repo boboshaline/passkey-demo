@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { isoBase64URL, isoUint8Array } from "@simplewebauthn/server/helpers";
+import { decodeCredentialPublicKey } from "@simplewebauthn/server/helpers";
 
 export function bufferToBase64Url(buffer: ArrayBuffer | null) {
   // Convert ArrayBuffer to a byte array
@@ -170,6 +171,11 @@ const PassKeyAuth = () => {
             changedPubKey,
             "===========public key credential=========="
           );
+          const publicKeyArrayBuffer = attestationResponse.getPublicKey();
+
+          if (!publicKeyArrayBuffer) {
+            throw new Error("Public key not available in attestation response");
+          }
 
           const responsePayLoad = {
             id: credential.id,
@@ -184,7 +190,7 @@ const PassKeyAuth = () => {
               ),
             },
             clientExtensionResults: credential.getClientExtensionResults(),
-            credentialPublicKey: changedPubKey,
+            credentialPublicKey: attestationResponse.getPublicKey(),
             authenticatorData: attestationResponse.getAuthenticatorData(),
             publicKeyAlgorithm: attestationResponse.getPublicKeyAlgorithm(),
             transports: attestationResponse.getTransports(),

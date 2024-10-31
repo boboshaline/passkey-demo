@@ -9,6 +9,13 @@ import {
   bufferToBase64Url,
 } from "./passkey-demo";
 import { isoBase64URL } from "@simplewebauthn/server/helpers";
+import {
+  decodeClientDataJSON,
+  COSEPublicKey,
+  COSEPublicKeyEC2,
+  COSEPublicKeyOKP,
+  decodeCredentialPublicKey,
+} from "@simplewebauthn/server/helpers";
 
 function decodeArrayBuffer(buffer: any) {
   // Create a new TextDecoder instance
