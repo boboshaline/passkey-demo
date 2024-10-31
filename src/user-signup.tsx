@@ -3,19 +3,12 @@ import axios from "axios";
 import "./user-signup.css";
 import { useNavigate } from "react-router-dom";
 import { PublicKeyCredentialWithAssertion } from "./types/passkey";
-import {
-  arrayBufferToBase64,
-  base64ToArrayBuffer,
-  bufferToBase64Url,
-} from "./passkey-demo";
+
 import { isoBase64URL } from "@simplewebauthn/server/helpers";
 import {
-  decodeClientDataJSON,
-  COSEPublicKey,
-  COSEPublicKeyEC2,
-  COSEPublicKeyOKP,
-  decodeCredentialPublicKey,
-} from "@simplewebauthn/server/helpers";
+  base64URLStringToBuffer,
+  bufferToBase64URLString,
+} from "@simplewebauthn/browser";
 
 function decodeArrayBuffer(buffer: any) {
   // Create a new TextDecoder instance
@@ -121,7 +114,7 @@ const SignupForm = () => {
 
       if ("data" in response) {
         const publicKey: PublicKeyCredentialRequestOptions = {
-          challenge: base64ToArrayBuffer(response.data.challenge),
+          challenge: base64URLStringToBuffer(response.data.challenge),
           allowCredentials: response.data.allowCredentials,
           rpId: response.data.rpId,
           userVerification: "required",
@@ -147,13 +140,15 @@ const SignupForm = () => {
         if (assertion) {
           const responseToSend = {
             id: assertion.id,
-            rawId: bufferToBase64Url(assertion.rawId),
+            rawId: bufferToBase64URLString(assertion.rawId),
             response: {
-              clientDataJSON: bufferToBase64Url(
+              clientDataJSON: bufferToBase64URLString(
                 assertion.response.clientDataJSON
               ),
               authenticatorData: isoBase64URL.fromBuffer(newData),
-              userHandle: arrayBufferToBase64(assertion.response.userHandle),
+              userHandle: bufferToBase64URLString(
+                assertion.response.userHandle
+              ),
               signature: isoBase64URL.fromBuffer(newSignature),
             },
             authenticatorAttachment: assertion.authenticatorAttachment,

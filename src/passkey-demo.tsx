@@ -3,85 +3,10 @@ import "./passkey-auth.css";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { isoBase64URL, isoUint8Array } from "@simplewebauthn/server/helpers";
-import { decodeCredentialPublicKey } from "@simplewebauthn/server/helpers";
-
-export function bufferToBase64Url(buffer: ArrayBuffer | null) {
-  // Convert ArrayBuffer to a byte array
-  if (!buffer) {
-    console.log("no public key");
-    throw new Error("no public key");
-  }
-  const bytes = new Uint8Array(buffer);
-
-  // Convert the byte array to a binary string
-  let binary = "";
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-
-  // Encode the binary string to Base64
-  const base64 = window.btoa(binary);
-
-  // Convert Base64 to URL-safe Base64 by replacing `+` and `/` and removing `=`
-  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-//encoding the public key
-export function arrayBufferToBase64(buffer: any | null) {
-  if (!buffer) {
-    console.error("no public key");
-    throw new Error("no public key found");
-  }
-  console.log(buffer, "public key");
-  let binary = "";
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  console.log(window.btoa(binary), "encoded/decoded public key");
-  return window.btoa(binary); // Convert binary string to Base64
-}
-function toBase64Url(arrayBuffer: ArrayBuffer): string {
-  let binary = "";
-  const bytes = new Uint8Array(arrayBuffer);
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  // Convert to base64 and replace characters for URL safety
-  return btoa(binary)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-}
-
-//decoding the id/challenge
-export function base64ToArrayBuffer(base64: string) {
-  // Replace URL-safe characters
-  let standardBase64 = base64
-    .replace(/-/g, "+") // Replace '-' with '+'
-    .replace(/_/g, "/"); // Replace '_' with '/'
-
-  // Pad the base64 string with `=` if necessary
-  const padding = standardBase64.length % 4;
-  if (padding === 2) {
-    standardBase64 += "=="; // Add two padding characters
-  } else if (padding === 3) {
-    standardBase64 += "="; // Add one padding character
-  }
-
-  // Decode the Base64 string
-  const binaryString = window.atob(standardBase64);
-
-  // Create a Uint8Array from the binary string
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-
-  return bytes.buffer; // Return the ArrayBuffer
-}
+import {
+  bufferToBase64URLString,
+  base64URLStringToBuffer,
+} from "@simplewebauthn/browser";
 
 const PassKeyAuth = () => {
   const [message, setMessage] = useState("");
@@ -90,7 +15,7 @@ const PassKeyAuth = () => {
   const location = useLocation();
   const { id } = location.state || {};
   console.log(id, "id from navigation");
-  // const userId = "671e52fa2d175460226d9c8d";
+
   const register = async () => {
     console.log("Register function started!!!!!!!!!");
     try {
@@ -111,12 +36,12 @@ const PassKeyAuth = () => {
         const dataTodestructure = response.data;
 
         const publicKey: PublicKeyCredentialCreationOptions = {
-          challenge: base64ToArrayBuffer(dataTodestructure.challenge),
+          challenge: base64URLStringToBuffer(dataTodestructure.challenge),
           rp: {
             name: dataTodestructure.rp,
           },
           user: {
-            id: base64ToArrayBuffer(dataTodestructure.user.id),
+            id: base64URLStringToBuffer(dataTodestructure.user.id),
             name: dataTodestructure.user.name,
             displayName: dataTodestructure.user.displayName,
           },
@@ -165,12 +90,12 @@ const PassKeyAuth = () => {
           const destPubKey = attestationResponse.getPublicKey();
           if (!destPubKey)
             throw new Error("=============no public key================");
-          const newPubKeyyy = new Uint8Array(destPubKey);
-          const changedPubKey = isoBase64URL.fromBuffer(newPubKeyyy);
-          console.log(
-            changedPubKey,
-            "===========public key credential=========="
-          );
+          // const newPubKeyyy = new Uint8Array(destPubKey);
+          // const changedPubKey = ba(newPubKeyyy);
+          // console.log(
+          //   changedPubKey,
+          //   "===========public key credential=========="
+          // );
           const publicKeyArrayBuffer = attestationResponse.getPublicKey();
 
           if (!publicKeyArrayBuffer) {
@@ -179,18 +104,18 @@ const PassKeyAuth = () => {
 
           const responsePayLoad = {
             id: credential.id,
-            rawId: bufferToBase64Url(credential.rawId),
+            rawId: bufferToBase64URLString(credential.rawId),
             type: credential.type,
             response: {
-              clientDataJSON: bufferToBase64Url(
+              clientDataJSON: bufferToBase64URLString(
                 attestationResponse.clientDataJSON
               ),
-              attestationObject: bufferToBase64Url(
+              attestationObject: bufferToBase64URLString(
                 attestationResponse.attestationObject
               ),
             },
             clientExtensionResults: credential.getClientExtensionResults(),
-            credentialPublicKey: attestationResponse.getPublicKey(),
+            credentialPublicKey: bufferToBase64URLString(publicKeyArrayBuffer),
             authenticatorData: attestationResponse.getAuthenticatorData(),
             publicKeyAlgorithm: attestationResponse.getPublicKeyAlgorithm(),
             transports: attestationResponse.getTransports(),
