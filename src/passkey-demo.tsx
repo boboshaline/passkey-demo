@@ -90,12 +90,7 @@ const PassKeyAuth = () => {
           const destPubKey = attestationResponse.getPublicKey();
           if (!destPubKey)
             throw new Error("=============no public key================");
-          // const newPubKeyyy = new Uint8Array(destPubKey);
-          // const changedPubKey = ba(newPubKeyyy);
-          // console.log(
-          //   changedPubKey,
-          //   "===========public key credential=========="
-          // );
+
           const publicKeyArrayBuffer = attestationResponse.getPublicKey();
 
           if (!publicKeyArrayBuffer) {
@@ -115,7 +110,7 @@ const PassKeyAuth = () => {
               ),
             },
             clientExtensionResults: credential.getClientExtensionResults(),
-            credentialPublicKey: bufferToBase64URLString(publicKeyArrayBuffer),
+            credentialPublicKey: publicKeyArrayBuffer,
             authenticatorData: attestationResponse.getAuthenticatorData(),
             publicKeyAlgorithm: attestationResponse.getPublicKeyAlgorithm(),
             transports: attestationResponse.getTransports(),

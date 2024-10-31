@@ -22,9 +22,6 @@ const SignupForm = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
 
-  const [loginemail, setLoginEmail] = useState("");
-  const [loginUsername, setLoginUsername] = useState("");
-
   const navigate = useNavigate();
 
   const handleSubmit = async (e: any) => {
@@ -192,10 +189,7 @@ const SignupForm = () => {
             type="email"
             name="email"
             value={email}
-            onChange={(e) => [
-              setEmail(e.target.value),
-              setLoginEmail(e.target.value),
-            ]}
+            onChange={(e) => [setEmail(e.target.value)]}
             placeholder="Enter your email"
             autoComplete="email webauthn"
           />
@@ -205,10 +199,7 @@ const SignupForm = () => {
             type="text"
             name="username"
             value={username}
-            onChange={(e) => [
-              setUsername(e.target.value),
-              setLoginUsername(e.target.value),
-            ]}
+            onChange={(e) => [setUsername(e.target.value)]}
             placeholder="Enter your username"
             autoComplete="username webauthn"
           />
