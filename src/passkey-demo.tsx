@@ -22,7 +22,7 @@ const PassKeyAuth = () => {
       // Correct the URL to include the slashes
       console.log("Preparing to send the user ID to server.");
       const response = await axios.post(
-        "http://localhost:3000/registerRequest",
+        "https://passkey-backenddemo.netlify.app/registerRequest",
         {
           userId: id,
         },
@@ -122,7 +122,7 @@ const PassKeyAuth = () => {
           const userId = id;
           console.log(userId, "id to send to server");
           const storeCredential = await axios.post(
-            "http://localhost:3000/registerResponse",
+            "https://passkey-backenddemo.netlify.app/registerResponse",
             { response: responsePayLoad, userId },
             { withCredentials: true }
           );
