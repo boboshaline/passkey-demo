@@ -36,7 +36,7 @@ const SignupForm = () => {
         };
         // Send personalInfo as the request body and headers separately
         const response = await axios.post(
-          "https://passkey-backenddemo.netlify.app/signup",
+          "https://passkey-6.onrender.com/signup",
           personalInfo
         ); // Pass headers as a separate parameter
 
@@ -101,7 +101,7 @@ const SignupForm = () => {
     try {
       //fetch challenge and options from backend
       const response = await axios.post(
-        "https://passkey-backenddemo.netlify.app/signinRequest",
+        "https://passkey-6.onrender.com/signinRequest",
         {},
         {
           withCredentials: true,
@@ -157,7 +157,7 @@ const SignupForm = () => {
             "---------------------response to send to server----------------------------------------"
           );
           const result = await axios.post(
-            "https://passkey-backenddemo.netlify.app/signinResponse",
+            "https://passkey-6.onrender.com/signinResponse",
             {
               response: responseToSend,
               userId: id,
