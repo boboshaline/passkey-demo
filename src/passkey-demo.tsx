@@ -110,7 +110,7 @@ const PassKeyAuth = () => {
               ),
             },
             clientExtensionResults: credential.getClientExtensionResults(),
-            credentialPublicKey: publicKeyArrayBuffer,
+            credentialPublicKey: bufferToBase64URLString(publicKeyArrayBuffer),
             authenticatorData: attestationResponse.getAuthenticatorData(),
             publicKeyAlgorithm: attestationResponse.getPublicKeyAlgorithm(),
             transports: attestationResponse.getTransports(),
