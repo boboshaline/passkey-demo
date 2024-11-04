@@ -36,7 +36,7 @@ const SignupForm = () => {
         };
         // Send personalInfo as the request body and headers separately
         const response = await axios.post(
-          "https://passkey-6.onrender.com/signup",
+          "http://localhost:3000/signup",
           personalInfo
         ); // Pass headers as a separate parameter
 
@@ -48,23 +48,10 @@ const SignupForm = () => {
           );
         }
         if (response.data.userId) {
-          // Create an object to store
-          // const userInfo = {
-          //   username: username,
-          //   email: email,
-          //   userId: response.data.userId,
-          // };
-
-          // Store the object as a JSON string
-          // localStorage.setItem("userInfo", JSON.stringify(userInfo));
-          // Navigate after successful response using the ID directly from response
           navigate(`/passkey`, { state: { id: response.data.userId } });
         } else {
           console.error("User ID not found in the response");
         }
-
-        // Navigate after successful response
-        // navigate(`/passkey`, { state: { id: userId } });
       }
     } catch (error) {
       console.error(error, "error in user-sign up");
@@ -73,100 +60,109 @@ const SignupForm = () => {
 
   async function login() {
     const abortController = new AbortController();
-    // const storedUserInfo = localStorage.getItem("userInfo");
-    // if (storedUserInfo) {
-    //   const userInfo = JSON.parse(storedUserInfo);
-    //   let userIdFound = null;
+    //prompt for email
+    const email = window.prompt("Please enter your email");
+    console.log(email, "email from prompt");
+    //prompt for username
+    const username = window.prompt("Please enter your username");
+    console.log(username, "username from prompt");
+    if (email && username) {
+      setEmail(email);
+      setUsername(username);
+    } else {
+      console.log("no data provided.");
+    }
+    if (!email) throw new Error("no data provided");
+    if (!username) throw new Error("no data provided");
 
-    //   // Loop through all keys in local storage
-    //   for (let i = 0; i < localStorage.length; i++) {
-    //     const key = localStorage.key(i);
-    //     if (key?.startsWith("user_")) {
-    //       // Compare username and email
-    //       if (
-    //         userInfo.username === loginUsername &&
-    //         userInfo.email === loginemail
-    //       ) {
-    //         userIdFound = userInfo.userId; // Found the matching userId
-    //         console.log(userIdFound, "user id found");
-    //         break;
-    //       }
-    //     }
-    //   }
-    // console.log(`Loaded user info: ${JSON.stringify(userInfo)}`);
-    // } else {
-    //   console.log("No user info found.");
-    // }
+    const userData = {
+      email: email,
+      userName: username,
+    };
 
     try {
-      //fetch challenge and options from backend
-      const response = await axios.post(
-        "https://passkey-6.onrender.com/signinRequest",
-        {},
-        {
-          withCredentials: true,
-        }
+      console.log(userData, "data to send to backend");
+      const storedResponse = await axios.post("http://localhost:3000/signup");
+      console.log(
+        JSON.stringify(storedResponse, null, 2),
+        "stored response from backend"
       );
-      console.log(JSON.stringify(response.data), "response from login request");
 
-      if ("data" in response) {
-        const publicKey: PublicKeyCredentialRequestOptions = {
-          challenge: base64URLStringToBuffer(response.data.challenge),
-          allowCredentials: response.data.allowCredentials,
-          rpId: response.data.rpId,
-          userVerification: "required",
-        };
-        const assertion = (await navigator.credentials.get({
-          publicKey,
-          signal: abortController.signal,
-          mediation: "required",
-        })) as PublicKeyCredentialWithAssertion;
-        console.log(
-          JSON.stringify(assertion, null, 2),
-          "response from login with passkeys"
+      if ("data" in storedResponse) {
+        const userId = storedResponse.data.userId;
+        console.log(userId, "userId from backend");
+        //fetch challenge and options from backend
+        const response = await axios.post(
+          "http://localhost:3000/signinRequest",
+          { userId },
+          {
+            withCredentials: true,
+          }
         );
-        console.log(assertion, "assertion from web authn");
-        if (!assertion.response.userHandle)
-          throw new Error("no user handle provided");
         console.log(
-          decodeArrayBuffer(assertion.response.userHandle),
-          "user handle encoded"
+          JSON.stringify(response.data),
+          "response from login request"
         );
-        const newData = new Uint8Array(assertion.response.authenticatorData);
-        const newSignature = new Uint8Array(assertion.response.signature);
-        if (assertion) {
-          const responseToSend = {
-            id: assertion.id,
-            rawId: bufferToBase64URLString(assertion.rawId),
-            response: {
-              clientDataJSON: bufferToBase64URLString(
-                assertion.response.clientDataJSON
-              ),
-              authenticatorData: isoBase64URL.fromBuffer(newData),
-              userHandle: bufferToBase64URLString(
-                assertion.response.userHandle
-              ),
-              signature: isoBase64URL.fromBuffer(newSignature),
-            },
-            authenticatorAttachment: assertion.authenticatorAttachment,
-            type: assertion.type,
+        if ("data" in response) {
+          const publicKey: PublicKeyCredentialRequestOptions = {
+            challenge: base64URLStringToBuffer(response.data.challenge),
+            allowCredentials: response.data.allowCredentials,
+            rpId: response.data.rpId,
+            userVerification: "required",
           };
-          const id = decodeArrayBuffer(assertion.response.userHandle);
+          const assertion = (await navigator.credentials.get({
+            publicKey,
+            signal: abortController.signal,
+            mediation: "required",
+          })) as PublicKeyCredentialWithAssertion;
           console.log(
-            responseToSend,
-            "---------------------response to send to server----------------------------------------"
+            JSON.stringify(assertion, null, 2),
+            "response from login with passkeys"
           );
-          const result = await axios.post(
-            "https://passkey-6.onrender.com/signinResponse",
-            {
-              response: responseToSend,
-              userId: id,
-            },
-            { withCredentials: true }
+          console.log(assertion, "assertion from web authn");
+          if (!assertion.response.userHandle)
+            throw new Error("no user handle provided");
+          console.log(
+            decodeArrayBuffer(assertion.response.userHandle),
+            "user handle encoded"
           );
-          console.log(result, "result from saving to server");
+          const newData = new Uint8Array(assertion.response.authenticatorData);
+          const newSignature = new Uint8Array(assertion.response.signature);
+          if (assertion) {
+            const responseToSend = {
+              id: assertion.id,
+              rawId: bufferToBase64URLString(assertion.rawId),
+              response: {
+                clientDataJSON: bufferToBase64URLString(
+                  assertion.response.clientDataJSON
+                ),
+                authenticatorData: isoBase64URL.fromBuffer(newData),
+                userHandle: bufferToBase64URLString(
+                  assertion.response.userHandle
+                ),
+                signature: isoBase64URL.fromBuffer(newSignature),
+              },
+              authenticatorAttachment: assertion.authenticatorAttachment,
+              type: assertion.type,
+            };
+            const id = decodeArrayBuffer(assertion.response.userHandle);
+            console.log(
+              responseToSend,
+              "---------------------response to send to server----------------------------------------"
+            );
+            const result = await axios.post(
+              "http://localhost:3000/signinResponse",
+              {
+                response: responseToSend,
+                userId: id,
+              },
+              { withCredentials: true }
+            );
+            console.log(result, "result from saving to server");
+          }
         }
       }
+
       navigate("/welcome");
     } catch (error: any) {
       console.error(error, "error from login with passkeys.");
