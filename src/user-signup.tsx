@@ -37,7 +37,7 @@ const SignupForm = () => {
         };
         // Send personalInfo as the request body and headers separately
         const response = await axios.post(
-          "http://localhost:3000/signup",
+          "https://passkey-6.onrender.com/signup",
           personalInfo
         ); // Pass headers as a separate parameter
 
@@ -63,11 +63,11 @@ const SignupForm = () => {
     const abortController = new AbortController();
     const sendData = {
       email: savedEmail,
-      username: savedUsername,
+      userName: savedUsername,
     };
     try {
       const storedResponse = await axios.post(
-        "http://localhost:3000/signup",
+        "https://passkey-6.onrender.com/signup",
         sendData
       );
       console.log(
@@ -80,7 +80,7 @@ const SignupForm = () => {
         console.log(userId, "userId from backend");
         //fetch challenge and options from backend
         const response = await axios.post(
-          "http://localhost:3000/signinRequest",
+          "https://passkey-6.onrender.com/signinRequest",
           { userId }
         );
         console.log(
@@ -135,7 +135,7 @@ const SignupForm = () => {
               "---------------------response to send to server----------------------------------------"
             );
             const result = await axios.post(
-              "http://localhost:3000/signinResponse",
+              "https://passkey-6.onrender.com/signinResponse",
               {
                 response: responseToSend,
                 userId: id,
@@ -193,7 +193,7 @@ const SignupForm = () => {
             Submit
           </button>
           <p>Already have an account?Click the login button</p>
-          <button className="button" onClick={login}>
+          <button className="button" type="button" onClick={login}>
             LOGIN
           </button>
         </form>
