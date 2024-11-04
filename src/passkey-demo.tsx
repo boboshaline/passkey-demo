@@ -25,8 +25,7 @@ const PassKeyAuth = () => {
         "http://localhost:3000/registerRequest",
         {
           userId: id,
-        },
-        { withCredentials: true }
+        }
       );
       console.log(response, "response from passkey endpoint");
 
@@ -123,8 +122,7 @@ const PassKeyAuth = () => {
           console.log(userId, "id to send to server");
           const storeCredential = await axios.post(
             "http://localhost:3000/registerResponse",
-            { response: responsePayLoad, userId },
-            { withCredentials: true }
+            { response: responsePayLoad, userId }
           );
           console.log(storeCredential, "response from storage");
           setMessage("Registration successful!");

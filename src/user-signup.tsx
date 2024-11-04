@@ -21,7 +21,8 @@ function decodeArrayBuffer(buffer: any) {
 const SignupForm = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
-
+  const [savedEmail, setSavedEmail] = useState("");
+  const [savedUsername, setSavedUsername] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e: any) => {
@@ -60,29 +61,15 @@ const SignupForm = () => {
 
   async function login() {
     const abortController = new AbortController();
-    //prompt for email
-    const email = window.prompt("Please enter your email");
-    console.log(email, "email from prompt");
-    //prompt for username
-    const username = window.prompt("Please enter your username");
-    console.log(username, "username from prompt");
-    if (email && username) {
-      setEmail(email);
-      setUsername(username);
-    } else {
-      console.log("no data provided.");
-    }
-    if (!email) throw new Error("no data provided");
-    if (!username) throw new Error("no data provided");
-
-    const userData = {
-      email: email,
-      userName: username,
+    const sendData = {
+      email: savedEmail,
+      username: savedUsername,
     };
-
     try {
-      console.log(userData, "data to send to backend");
-      const storedResponse = await axios.post("http://localhost:3000/signup");
+      const storedResponse = await axios.post(
+        "http://localhost:3000/signup",
+        sendData
+      );
       console.log(
         JSON.stringify(storedResponse, null, 2),
         "stored response from backend"
@@ -94,10 +81,7 @@ const SignupForm = () => {
         //fetch challenge and options from backend
         const response = await axios.post(
           "http://localhost:3000/signinRequest",
-          { userId },
-          {
-            withCredentials: true,
-          }
+          { userId }
         );
         console.log(
           JSON.stringify(response.data),
@@ -155,8 +139,7 @@ const SignupForm = () => {
               {
                 response: responseToSend,
                 userId: id,
-              },
-              { withCredentials: true }
+              }
             );
             console.log(result, "result from saving to server");
           }
@@ -185,7 +168,10 @@ const SignupForm = () => {
             type="email"
             name="email"
             value={email}
-            onChange={(e) => [setEmail(e.target.value)]}
+            onChange={(e) => [
+              setEmail(e.target.value),
+              setSavedEmail(e.target.value),
+            ]}
             placeholder="Enter your email"
             autoComplete="email webauthn"
           />
@@ -195,7 +181,10 @@ const SignupForm = () => {
             type="text"
             name="username"
             value={username}
-            onChange={(e) => [setUsername(e.target.value)]}
+            onChange={(e) => [
+              setUsername(e.target.value),
+              setSavedUsername(e.target.value),
+            ]}
             placeholder="Enter your username"
             autoComplete="username webauthn"
           />
